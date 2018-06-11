@@ -6,7 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Type;
 
-final class Migration201805090817
+final class Migration201706040802
 {
     private $connection;
 
@@ -18,20 +18,25 @@ final class Migration201805090817
     public function migrate(): void
     {
         $schema = new Schema();
-        $this->createSubmissionsTable($schema);
-
+        $this->createUsersTable($schema);
         $queries = $schema->toSql($this->connection->getDatabasePlatform());
         foreach ($queries as $query) {
             $this->connection->executeQuery($query);
         }
     }
 
-    private function createSubmissionsTable(Schema $schema): void
+    private function createUsersTable(Schema $schema): void
     {
-        $table = $schema->createTable('submissions');
+        $table = $schema->createTable('users');
         $table->addColumn('id', Type::GUID);
-        $table->addColumn('title', Type::STRING);
-        $table->addColumn('url', Type::STRING);
-        $table->addColumn('creation_date', Type::DATETIME);
+        $table->addColumn('nickname', Type::STRING);
+        $table->addColumn('password_hash', TYPE::STRING);
+        $table->addColumn('creation_date', TYPE::DATETIME);
+        $table->addColumn('failed_login_attempts', TYPE::INTEGER, [
+            'default' => 0,
+        ]);
+        $table->addColumn('last_failed_login_attempt', TYPE::DATETIME, [
+            'notnull' => false,
+        ]);
     }
 }
