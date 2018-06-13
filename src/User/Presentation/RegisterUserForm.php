@@ -3,23 +3,29 @@
 namespace SocialNews\User\Presentation;
 
 use SocialNews\Framework\Csrf\StoredTokenValidator;
+use SocialNews\User\Application\NicknameTakenQuery;
 use SocialNews\User\Application\RegisterUser;
 use SocialNews\Framework\Csrf\Token;
+use SocialNews\User\Infrastructure\DbalNicknameTakenQuery;
 
 final class RegisterUserForm
 {
     private $storedTokenValidator;
+    /** @var DbalNicknameTakenQuery */
+    private $nicknameTakenQuery;
     private $token;
     private $nickname;
     private $password;
 
     public function __construct(
         StoredTokenValidator $storedTokenValidator,
+        NicknameTakenQuery $nicknameTakenQuery,
         string $token,
         string $nickname,
         string $password
     ) {
         $this->storedTokenValidator = $storedTokenValidator;
+        $this->nicknameTakenQuery = $nicknameTakenQuery;
         $this->token = $token;
         $this->nickname = $nickname;
         $this->password = $password;
@@ -54,6 +60,10 @@ final class RegisterUserForm
 
         if (strlen($this->password) < 8) {
             $errors[] = 'Password must be at least 8 characters';
+        }
+
+        if ($this->nicknameTakenQuery->execute($this->nickname)) {
+            $errors[] = 'This nickname is already being used';
         }
 
         return $errors;

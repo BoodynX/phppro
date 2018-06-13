@@ -13,6 +13,10 @@ use SocialNews\FrontPage\Application\SubmissionsQuery;
 use SocialNews\FrontPage\Infrastructure\DbalSubmissionsQuery;
 use SocialNews\Submission\Domain\SubmissionRepository;
 use SocialNews\Submission\Infrastructure\DbalSubmissionRepository;
+use SocialNews\User\Application\NicknameTakenQuery;
+use SocialNews\User\Domain\UserRepository;
+use SocialNews\User\Infrastructure\DbalNicknameTakenQuery;
+use SocialNews\User\Infrastructure\DbalUserRepository;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -43,5 +47,7 @@ $injector->share(Connection::class);
 $injector->alias(TokenStorage::class, SymfonySessionTokenStorage::class);
 $injector->alias(SessionInterface::class, Session::class);
 $injector->alias(SubmissionRepository::class, DbalSubmissionRepository::class);
+$injector->alias(UserRepository::class, DbalUserRepository::class);
+$injector->alias(NicknameTakenQuery::class, DbalNicknameTakenQuery::class);
 
 return $injector;
