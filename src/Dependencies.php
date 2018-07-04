@@ -6,6 +6,8 @@ use SocialNews\Framework\Csrf\SymfonySessionTokenStorage;
 use SocialNews\Framework\Csrf\TokenStorage;
 use SocialNews\Framework\Dbal\ConnectionFactory;
 use SocialNews\Framework\Dbal\DatabaseUrl;
+use SocialNews\Framework\Rbac\User;
+use SocialNews\Framework\Rbac\SymfonySessionCurrentUserFactory;
 use SocialNews\Framework\Rendering\TemplateDirectory;
 use SocialNews\Framework\Rendering\TemplateRenderer;
 use SocialNews\Framework\Rendering\TwigTemplateRendererFactory;
@@ -49,5 +51,10 @@ $injector->alias(SessionInterface::class, Session::class);
 $injector->alias(SubmissionRepository::class, DbalSubmissionRepository::class);
 $injector->alias(UserRepository::class, DbalUserRepository::class);
 $injector->alias(NicknameTakenQuery::class, DbalNicknameTakenQuery::class);
+
+$injector->delegate(User::class, function () use ($injector): User {
+    $factory = $injector->make(SymfonySessionCurrentUserFactory::class);
+    return $factory->create();
+});
 
 return $injector;

@@ -3,6 +3,8 @@
 namespace SocialNews\Submission\Presentation;
 
 use SocialNews\Framework\Csrf\Token;
+use SocialNews\Framework\Rbac\User;
+use SocialNews\Framework\Rbac\Permission;
 use SocialNews\Framework\Rendering\TemplateRenderer;
 use SocialNews\Submission\Application\SubmitLink;
 use SocialNews\Submission\Application\SubmitLinkHandler;
@@ -17,27 +19,38 @@ final class SubmissionController
     private $submissionFormFactory;
     private $session;
     private $submitLinkHandler;
+    private $user;
 
     public function __construct(
         TemplateRenderer $templateRenderer,
         SubmissionFormFactory $submissionFormFactory,
         Session $session,
-        SubmitLinkHandler $submitLinkHandler
+        SubmitLinkHandler $submitLinkHandler,
+        User $user
     ) {
         $this->templateRenderer = $templateRenderer;
         $this->submissionFormFactory = $submissionFormFactory;
         $this->session = $session;
         $this->submitLinkHandler = $submitLinkHandler;
+        $this->user = $user;
     }
 
     public function show(): Response
     {
+        if (!$this->authorizedUser()) {
+            return new RedirectResponse('/login');
+        }
+
         $content = $this->templateRenderer->render('Submission.html.twig');
         return new Response($content);
     }
 
     public function submit(Request $request): Response
     {
+        if (!$this->authorizedUser()) {
+            return new RedirectResponse('/login');
+        }
+
         $response = new RedirectResponse('/submit');
         $form = $this->submissionFormFactory->createFromRequest($request);
 
@@ -57,5 +70,19 @@ final class SubmissionController
         );
 
         return $response;
+    }
+
+    private function authorizedUser()
+    {
+        if ($this->user->hasPermission(new Permission\SubmitLink())) {
+            return true;
+        }
+
+        $this->session->getFlashBag()->add(
+            'errors',
+            'You have to log in before you can submit a link.'
+        );
+
+        return false;
     }
 }
